@@ -1,114 +1,202 @@
 <?php
-// Add settings page for the plugin
-function my_plugin_settings_page()
+// Register all settings at once in an array
+function license_manager_register_settings()
 {
-    add_menu_page(
-        'Footer Settings',
-        'Footer Settings',
-        'manage_options',
-        'my-footer-settings',
-        'my_plugin_render_settings_page',
-        'dashicons-admin-generic'
+    // Register a single setting for all options
+    register_setting(
+        'license_manager_settings', // Group name
+        'license_manager_options',  // Option name
+        'license_manager_options_validate' // Validation callback (optional)
+    );
+
+    // Add a settings section
+    add_settings_section(
+        'license_manager_footer_section',  // Section ID
+        'تنظیمات فوتر',                   // Title
+        null,                              // Callback function
+        'license-manager-settings'         // Page slug
+    );
+
+    // Add fields to the section
+    add_settings_field(
+        'footer_bg_color',
+        'رنگ پس‌زمینه:',
+        'license_manager_footer_bg_color_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_font_family',
+        'فونت:',
+        'license_manager_footer_font_family_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_font_size',
+        'اندازه فونت:',
+        'license_manager_footer_font_size_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_font_color',
+        'رنگ فونت:',
+        'license_manager_footer_font_color_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_site_text',
+        'متن سایت:',
+        'license_manager_footer_site_text_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_dev_text',
+        'متن توسعه‌دهنده:',
+        'license_manager_footer_dev_text_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_dev_link',
+        'لینک توسعه‌دهنده:',
+        'license_manager_footer_dev_link_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_dev_link_color',
+        'رنگ لینک توسعه‌دهنده:',
+        'license_manager_footer_dev_link_color_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+    // Add new settings for locking the footer
+    add_settings_field(
+        'footer_lock_enabled',
+        'قفل محتوای فوتر:',
+        'license_manager_footer_lock_enabled_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
+    );
+
+    add_settings_field(
+        'footer_password',
+        'پسورد فوتر:',
+        'license_manager_footer_password_callback',
+        'license-manager-settings',
+        'license_manager_footer_section'
     );
 }
-add_action('admin_menu', 'my_plugin_settings_page');
+add_action('admin_init', 'license_manager_register_settings');
 
-function my_plugin_render_settings_page()
+// Validation callback for settings (optional)
+function license_manager_options_validate($input)
 {
-    // Check if the user is an administrator
-    if (!current_user_can('administrator')) {
-        echo '<div class="alert alert-danger">شما اجازه دسترسی به این تنظیمات را ندارید.</div>';
-        return;
-    }
-
-    if (isset($_POST['save_footer_settings'])) {
-        update_option('footer_bg_color', sanitize_hex_color($_POST['footer_bg_color']));
-        update_option('footer_font_family', sanitize_text_field($_POST['footer_font_family']));
-        update_option('footer_font_size', intval($_POST['footer_font_size']));
-        update_option('footer_font_color', sanitize_hex_color($_POST['footer_font_color']));
-        update_option('footer_site_text', sanitize_text_field($_POST['footer_site_text']));
-        update_option('footer_dev_text', sanitize_text_field($_POST['footer_dev_text']));
-        update_option('footer_dev_link', esc_url_raw($_POST['footer_dev_link']));
-        update_option('footer_dev_link_color', sanitize_hex_color($_POST['footer_dev_link_color']));
-        echo '<div class="alert alert-success">تنظیمات با موفقیت ذخیره شد</div>';
-    }
-
-    // Get stored values or use defaults
-    $bg_color = get_option('footer_bg_color', '#f9f9f9');
-    $font_family = get_option('footer_font_family', 'Arial, sans-serif');
-    $font_size = get_option('footer_font_size', '14');
-    $font_color = get_option('footer_font_color', '#333');
-    $site_text = get_option('footer_site_text', get_bloginfo('name'));
-    $dev_text = get_option('footer_dev_text', 'توسعه دهنده سایت');
-    $dev_link = get_option('footer_dev_link', 'https://wordpress.org/');
-    $dev_link_color = get_option('footer_dev_link_color', '#006a4e');
-?>
-    <div class="wrap">
-        <h1 class="wp-heading-inline">تنظیمات فوتر</h1>
-        <form method="post" class="mt-4">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="footer_bg_color" class="form-label">رنگ پس‌زمینه:</label>
-                    <input type="color" id="footer_bg_color" name="footer_bg_color" value="<?php echo esc_attr($bg_color); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">رنگ پس‌زمینه فوتر را انتخاب کنید.</small>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="footer_font_family" class="form-label">فونت:</label>
-                    <select id="footer_font_family" name="footer_font_family" class="form-select form-select-lg">
-                        <option value="Arial, sans-serif" <?php selected($font_family, 'Arial, sans-serif'); ?>>Arial</option>
-                        <option value="Tahoma, sans-serif" <?php selected($font_family, 'Tahoma, sans-serif'); ?>>Tahoma</option>
-                        <option value="Verdana, sans-serif" <?php selected($font_family, 'Verdana, sans-serif'); ?>>Verdana</option>
-                    </select>
-                    <small class="form-text text-muted">فونت مورد نظر برای فوتر را انتخاب کنید.</small>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="footer_font_size" class="form-label">اندازه فونت:</label>
-                    <input type="number" id="footer_font_size" name="footer_font_size" value="<?php echo esc_attr($font_size); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">اندازه فونت فوتر را وارد کنید.</small>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="footer_font_color" class="form-label">رنگ فونت:</label>
-                    <input type="color" id="footer_font_color" name="footer_font_color" value="<?php echo esc_attr($font_color); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">رنگ متن فوتر را انتخاب کنید.</small>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <label for="footer_site_text" class="form-label">متن سایت:</label>
-                    <input type="text" id="footer_site_text" name="footer_site_text" value="<?php echo esc_attr($site_text); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">نام سایت شما را وارد کنید.</small>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                    <label for="footer_dev_text" class="form-label">متن توسعه‌دهنده:</label>
-                    <input type="text" id="footer_dev_text" name="footer_dev_text" value="<?php echo esc_attr($dev_text); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">متن توسعه‌دهنده را وارد کنید.</small>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                    <label for="footer_dev_link" class="form-label">لینک توسعه‌دهنده:</label>
-                    <input type="url" id="footer_dev_link" name="footer_dev_link" value="<?php echo esc_attr($dev_link); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">لینک وب‌سایت توسعه‌دهنده را وارد کنید.</small>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                    <label for="footer_dev_link_color" class="form-label">رنگ لینک توسعه‌دهنده:</label>
-                    <input type="color" id="footer_dev_link_color" name="footer_dev_link_color" value="<?php echo esc_attr($dev_link_color); ?>" class="form-control form-control-lg">
-                    <small class="form-text text-muted">رنگ لینک توسعه‌دهنده را انتخاب کنید.</small>
-                </div>
-            </div>
-
-            <div class="text-center mt-4">
-                <button type="submit" name="save_footer_settings" class="btn btn-primary btn-lg">ذخیره تنظیمات</button>
-            </div>
-        </form>
-    </div>
-<?php
+    // You can add validation logic here if needed
+    return $input;
 }
-?>
+
+// Callback functions for each field
+function license_manager_footer_bg_color_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_bg_color']) ? esc_attr($options['footer_bg_color']) : '#ffffff';
+    echo '<input type="color" id="footer_bg_color" name="license_manager_options[footer_bg_color]" value="' . $value . '" />';
+}
+
+function license_manager_footer_font_family_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_font_family']) ? esc_attr($options['footer_font_family']) : 'Arial, sans-serif';
+    echo '<select id="footer_font_family" name="license_manager_options[footer_font_family]">
+            <option value="Arial, sans-serif" ' . selected($value, 'Arial, sans-serif', false) . '>Arial</option>
+            <option value="Tahoma, sans-serif" ' . selected($value, 'Tahoma, sans-serif', false) . '>Tahoma</option>
+            <option value="Verdana, sans-serif" ' . selected($value, 'Verdana, sans-serif', false) . '>Verdana</option>
+          </select>';
+}
+
+function license_manager_footer_font_size_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_font_size']) ? esc_attr($options['footer_font_size']) : '14';
+    echo '<input type="number" id="footer_font_size" name="license_manager_options[footer_font_size]" value="' . $value . '" min="10" max="50" />';
+}
+
+function license_manager_footer_font_color_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_font_color']) ? esc_attr($options['footer_font_color']) : '#000000';
+    echo '<input type="color" id="footer_font_color" name="license_manager_options[footer_font_color]" value="' . $value . '" />';
+}
+
+function license_manager_footer_site_text_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_site_text']) ? esc_attr($options['footer_site_text']) : get_bloginfo('name');
+    echo '<input type="text" id="footer_site_text" name="license_manager_options[footer_site_text]" value="' . $value . '" />';
+}
+
+function license_manager_footer_dev_text_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_dev_text']) ? esc_attr($options['footer_dev_text']) : '';
+    echo '<input type="text" id="footer_dev_text" name="license_manager_options[footer_dev_text]" value="' . $value . '" />';
+}
+
+function license_manager_footer_dev_link_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_dev_link']) ? esc_attr($options['footer_dev_link']) : '';
+    echo '<input type="url" id="footer_dev_link" name="license_manager_options[footer_dev_link]" value="' . $value . '" />';
+}
+
+function license_manager_footer_dev_link_color_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_dev_link_color']) ? esc_attr($options['footer_dev_link_color']) : '#000000';
+    echo '<input type="color" id="footer_dev_link_color" name="license_manager_options[footer_dev_link_color]" value="' . $value . '" />';
+}
+
+// Callback function for the "قفل محتوای فوتر" option
+function license_manager_footer_lock_enabled_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_lock_enabled']) ? (bool) $options['footer_lock_enabled'] : false;
+    echo '<input type="checkbox" id="footer_lock_enabled" name="license_manager_options[footer_lock_enabled]" ' . checked($value, true, false) . ' />';
+}
+
+// Callback function for the "پسورد فوتر" option
+function license_manager_footer_password_callback()
+{
+    $options = get_option('license_manager_options');
+    $value = isset($options['footer_password']) ? esc_attr($options['footer_password']) : '';
+    echo '<input type="password" id="footer_password" name="license_manager_options[footer_password]" value="' . $value . '" />';
+}
+
+
+
+
+function license_manager_save_footer_password()
+{
+    if (isset($_POST['password'])) {
+        $password = sanitize_text_field($_POST['password']);
+        update_option('footer_password', $password);
+        update_option('footer_lock_enabled', true); // Lock the footer
+        wp_send_json_success();
+    } else {
+        wp_send_json_error();
+    }
+}
+
+add_action('wp_ajax_save_footer_password', 'license_manager_save_footer_password');
